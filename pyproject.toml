@@ -25,7 +25,7 @@ click = "^8.1"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.6.9"
-black = "^24.8.0"
+black = "^25.1.0"
 pytest = "^8.2.0"
 mypy = "^1.11.0"
 
