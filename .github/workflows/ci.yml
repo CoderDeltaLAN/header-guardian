@@ -15,7 +15,7 @@ permissions:
 
 jobs:
   python:
-    if: ${{ github.event_name != 'pull_request' || ( github.event.pull_request.draft == false && contains(join(github.event.pull_request.labels.*.name, ','), 'ready') ) }}
+    if: ${{ (github.event_name == 'push' && startsWith(github.ref, 'refs/heads/main')) || (github.event_name == 'pull_request' && github.event.pull_request.draft == false && contains(github.event.pull_request.labels.*.name, 'ready')) }}
     name: python-${{ matrix.python-version }} on ${{ matrix.os }}
     strategy:
       matrix:
@@ -30,17 +30,11 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - uses: abatilo/actions-poetry@v3
-      - name: Install deps
-        run: poetry install --no-interaction
-      - name: Ruff lint
-        run: poetry run ruff check .
-      - name: Black check
-        run: poetry run black --check .
-      - name: Ruff format check
-        run: poetry run ruff format --check .
-      - name: Tests
-        run: poetry run pytest -q
+      - run: poetry install --no-interaction
+      - run: poetry run ruff check .
+      - run: poetry run black --check .
+      - run: poetry run ruff format --check .
+      - run: poetry run pytest -q
         env:
           PYTHONPATH: src
-      - name: Mypy
-        run: poetry run mypy .
+      - run: poetry run mypy .
