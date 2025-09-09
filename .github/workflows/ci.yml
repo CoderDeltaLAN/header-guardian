@@ -39,7 +39,7 @@ jobs:
       - name: Ruff format check
         run: poetry run ruff format --check .
       - name: Tests
-        run: pytest -q
+        run: poetry run pytest -q
         env:
           PYTHONPATH: src
       - name: Mypy
