@@ -1,0 +1,61 @@
+[tool.poetry]
+name = "header-guardian"
+version = "0.1.0"
+description = "Multi-language header enforcer with auto-fix and SARIF."
+authors = ["CoderDeltaLAN <coderdeltalan.cargo784@8alias.com>"]
+readme = "README.md"
+license = "MIT"
+packages = [{ include = "header_guardian", from = "src" }]
+include = ["LICENSE", "README.md"]
+classifiers = [
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Intended Audience :: Developers",
+  "Topic :: Software Development :: Build Tools",
+  "Topic :: Software Development :: Quality Assurance",
+  "Environment :: Console",
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+click = "^8.1"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.9"
+black = "^24.8.0"
+pytest = "^8.2.0"
+mypy = "^1.11.0"
+
+[tool.poetry.scripts]
+header-guardian = "header_guardian.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.black]
+line-length = 100
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.mypy]
+python_version = "3.11"
+files = ["src"]
+strict = true
+warn_unused_ignores = true
+
+[tool.poetry.urls]
+Homepage = "https://github.com/CoderDeltaLAN/header-guardian"
+Repository = "https://github.com/CoderDeltaLAN/header-guardian"
