@@ -49,7 +49,8 @@ def _normalize(s: str) -> str:
 
 
 def default_header_text(license_id: str = "MIT", ext: str = ".py") -> str:
-    return f"{_comment_prefix(ext)}SPDX-License-Identifier: {license_id}"
+    # Cabecera mínima (puede expandirse con Copyright si se desea)
+    return f"{_comment_prefix(ext)}SPDX-License-Identifier: {license_id}\n"
 
 
 def header_for_path(path: Path, license_id: str = "MIT") -> str:
@@ -58,24 +59,31 @@ def header_for_path(path: Path, license_id: str = "MIT") -> str:
 
 def has_header(path: Path, header: str) -> bool:
     text = path.read_text(encoding="utf-8", errors="ignore")
-    head = "\n".join(text.splitlines()[:30])
+    head = "\n".join(text.splitlines()[:50])
     return _normalize(header) in _normalize(head)
 
 
-# Alias de compatibilidad para tests heredados
-def has_spdx_header(path: Path, header: str | None = None, *, license_id: str = "MIT") -> bool:
-    if header is None:
-        header = header_for_path(path, license_id=license_id)
-    return has_header(path, header)
+# Compat: acepta Path o str (contenido). Si str y header no dado, busca cadena SPDX.
+def has_spdx_header(obj: Path | str, header: str | None = None, *, license_id: str = "MIT") -> bool:
+    if isinstance(obj, Path):
+        h = header or header_for_path(obj, license_id=license_id)
+        return has_header(obj, h)
+    text = obj
+    if header is not None:
+        return _normalize(header) in _normalize("\n".join(text.splitlines()[:50]))
+    return "SPDX-License-Identifier:" in text.splitlines()[0:50].__str__()
 
 
 def ensure_header(path: Path, header: str, *, autofix: bool = False) -> bool:
+    # Semántica "ensure": True si el archivo TERMINA con header (lo tuviera o lo agreguemos)
     if has_header(path, header):
-        return False
+        return True
     if not autofix:
         return False
     text = path.read_text(encoding="utf-8", errors="ignore")
-    path.write_text(f"{header}\n{text}", encoding="utf-8")
+    # Evita duplicados si corre en paralelo
+    if not has_header(path, header):
+        path.write_text(f"{header}{'' if header.endswith('\n') else '\n'}{text}", encoding="utf-8")
     return True
 
 
