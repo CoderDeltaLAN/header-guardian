@@ -1,0 +1,11 @@
+name: "Feature request"
+description: "Propón una mejora"
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: motivation
+    attributes: { label: "Motivación", placeholder: "..." }
+    validations: { required: true }
+  - type: textarea
+    id: proposal
+    attributes: { label: "Propuesta", placeholder: "..." }
