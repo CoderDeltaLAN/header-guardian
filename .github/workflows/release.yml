@@ -1,0 +1,40 @@
+name: ci: publish to PyPI on tag
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No token -> saltar publicación (todo verde)
+        if: ${{ secrets.PYPI_API_TOKEN == '' }}
+        run: echo "PYPI_API_TOKEN no configurado; publicación omitida."
+
+      - uses: actions/setup-python@v5
+        if: ${{ secrets.PYPI_API_TOKEN != '' }}
+        with:
+          python-version: '3.12'
+
+      - uses: abatilo/actions-poetry@v3
+        if: ${{ secrets.PYPI_API_TOKEN != '' }}
+
+      - name: Build
+        if: ${{ secrets.PYPI_API_TOKEN != '' }}
+        run: |
+          poetry build
+          python -m pip install -q twine
+          twine check dist/*
+
+      - name: Publish to PyPI
+        if: ${{ secrets.PYPI_API_TOKEN != '' }}
+        env:
+          PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m pip install -q twine
+          twine upload -u __token__ -p "$PYPI_API_TOKEN" dist/*
