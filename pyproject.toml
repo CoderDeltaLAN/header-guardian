@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "header-guardian"
-version = "0.1.0"
+version = "0.1.1"
 description = "Multi-language header enforcer with auto-fix and SARIF."
 authors = ["CoderDeltaLAN <coderdeltalan.cargo784@8alias.com>"]
 readme = "README.md"
