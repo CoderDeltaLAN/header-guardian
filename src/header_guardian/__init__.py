@@ -2,7 +2,7 @@ from __future__ import annotations
 
 __all__: list[str] = ["ping", "__version__"]
 
-__version__ = "0.1.0"
+__version__ = "0.1.2"
 
 
 def ping() -> str:
