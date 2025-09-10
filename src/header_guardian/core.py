@@ -58,9 +58,15 @@ def header_for_path(path: Path, license_id: str = "MIT") -> str:
 
 def has_header(path: Path, header: str) -> bool:
     text = path.read_text(encoding="utf-8", errors="ignore")
-    head_lines = text.splitlines()[:30]
-    head = "\n".join(head_lines)
+    head = "\n".join(text.splitlines()[:30])
     return _normalize(header) in _normalize(head)
+
+
+# Alias de compatibilidad para tests heredados
+def has_spdx_header(path: Path, header: str | None = None, *, license_id: str = "MIT") -> bool:
+    if header is None:
+        header = header_for_path(path, license_id=license_id)
+    return has_header(path, header)
 
 
 def ensure_header(path: Path, header: str, *, autofix: bool = False) -> bool:
@@ -69,8 +75,7 @@ def ensure_header(path: Path, header: str, *, autofix: bool = False) -> bool:
     if not autofix:
         return False
     text = path.read_text(encoding="utf-8", errors="ignore")
-    new = f"{header}\n{text}"
-    path.write_text(new, encoding="utf-8")
+    path.write_text(f"{header}\n{text}", encoding="utf-8")
     return True
 
 
@@ -97,6 +102,7 @@ __all__ = [
     "default_header_text",
     "header_for_path",
     "has_header",
+    "has_spdx_header",
     "ensure_header",
     "check_headers",
     "fix_headers",
