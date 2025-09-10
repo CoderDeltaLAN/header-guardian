@@ -1,6 +1,9 @@
-# Copyright 2025 CoderDeltaLAN
-# SPDX-License-Identifier: MIT
+from __future__ import annotations
 
-from .core import ping
+__all__: list[str] = ["ping", "__version__"]
 
-__all__ = ["ping"]
+__version__ = "0.1.0"
+
+
+def ping() -> str:
+    return "pong"
