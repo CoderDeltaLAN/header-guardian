@@ -11,11 +11,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.11' }
-      - run: python -m pip install -U pip
-      - run: pip install -U ruff black mypy pytest build
-      - run: pip install -e .
+        with:
+          python-version: "3.11"
       - run: : > ci.log
+      - run: echo '$ python -m pip install -U pip' | tee -a ci.log
+      - run: python -m pip install -U pip 2>&1 | tee -a ci.log
+      - run: echo '$ pip install -U ruff black mypy pytest build' | tee -a ci.log
+      - run: pip install -U ruff black mypy pytest build 2>&1 | tee -a ci.log
+      - run: echo '$ pip install -e .' | tee -a ci.log
+      - run: pip install -e . 2>&1 | tee -a ci.log
       - run: echo '$ ruff check .' | tee -a ci.log
       - run: ruff check . 2>&1 | tee -a ci.log
       - run: echo '$ ruff format --check .' | tee -a ci.log
@@ -37,10 +41,13 @@ jobs:
           subprocess.check_call([sys.executable,"-m","pip","install",ws[0]])
           import header_guardian as m; print("import OK", getattr(m,"__version__","?"))
           PY
-      - name: Upload job log
+      - uses: actions/upload-artifact@v4
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with: { name: ci-log-py311, path: ci.log, if-no-files-found: warn, retention-days: 7 }
+        with:
+          name: ci-log-py311
+          path: ci.log
+          if-no-files-found: warn
+          retention-days: 7
 
   linux-py312:
     name: python-3.12 on ubuntu-latest
@@ -48,11 +55,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: '3.12' }
-      - run: python -m pip install -U pip
-      - run: pip install -U ruff black mypy pytest build
-      - run: pip install -e .
+        with:
+          python-version: "3.12"
       - run: : > ci.log
+      - run: echo '$ python -m pip install -U pip' | tee -a ci.log
+      - run: python -m pip install -U pip 2>&1 | tee -a ci.log
+      - run: echo '$ pip install -U ruff black mypy pytest build' | tee -a ci.log
+      - run: pip install -U ruff black mypy pytest build 2>&1 | tee -a ci.log
+      - run: echo '$ pip install -e .' | tee -a ci.log
+      - run: pip install -e . 2>&1 | tee -a ci.log
       - run: echo '$ ruff check .' | tee -a ci.log
       - run: ruff check . 2>&1 | tee -a ci.log
       - run: echo '$ ruff format --check .' | tee -a ci.log
@@ -74,7 +85,10 @@ jobs:
           subprocess.check_call([sys.executable,"-m","pip","install",ws[0]])
           import header_guardian as m; print("import OK", getattr(m,"__version__","?"))
           PY
-      - name: Upload job log
+      - uses: actions/upload-artifact@v4
         if: ${{ always() }}
-        uses: actions/upload-artifact@v4
-        with: { name: ci-log-py312, path: ci.log, if-no-files-found: warn, retention-days: 7 }
+        with:
+          name: ci-log-py312
+          path: ci.log
+          if-no-files-found: warn
+          retention-days: 7
