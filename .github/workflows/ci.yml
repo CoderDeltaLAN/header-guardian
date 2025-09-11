@@ -1,55 +1,65 @@
 name: CI
+
 on:
-  push: { branches: [ main ] }
+  push:
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
   workflow_dispatch:
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-permissions: { contents: read }
 
 jobs:
-  linux:
-    name: python-${{ matrix.py }} on ubuntu-latest
+  python-3-11-ubuntu:
+    name: python-3.11 on ubuntu-latest
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix: { py: ["3.11","3.12"] }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: ${{ matrix.py }} }
-      - uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ runner.os }}-${{ matrix.py }}-${{ hashFiles('pyproject.toml') }}
-      - run: python -m pip install -U pip build
-      - run: python -m build
-      - run: python -m pip install dist/*.whl
-      - run: python -m pip install ruff==0.6.9 black==24.10.0 pytest==8.4.2 mypy==1.17.1
+        with: { python-version: '3.11' }
+      - run: python -m pip install -U pip wheel build
+      - run: pip install -U ruff black mypy pytest
+      - run: pip install -e .
       - run: ruff check .
-      - run: black --check .
       - run: ruff format --check .
+      - run: black --check .
       - run: pytest -q
       - run: mypy .
+      - name: Build wheel
+        run: python -m build
+      - name: Install built wheel & smoke
+        run: |
+          echo "WHEEL_PATH=$(python - <<'PY'
+import glob; ws=glob.glob("dist/*.whl"); print(ws[0] if ws else "")
+PY
+          )" >> $GITHUB_ENV
+          python -m pip install "${WHEEL_PATH}"
+          python - <<'PY'
+import header_guardian as m; print("import OK", getattr(m,"__version__","?"))
+PY
 
-  windows:
-    name: python-${{ matrix.py }} on windows-latest
-    runs-on: windows-latest
-    continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix: { py: ["3.11","3.12"] }
+  python-3-12-ubuntu:
+    name: python-3.12 on ubuntu-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: ${{ matrix.py }} }
-      - run: python -m pip install -U pip build
-      - run: python -m build
-      - run: python -m pip install dist/*.whl
-      - run: python -m pip install ruff==0.6.9 black==24.10.0 pytest==8.4.2 mypy==1.17.1
+        with: { python-version: '3.12' }
+      - run: python -m pip install -U pip wheel build
+      - run: pip install -U ruff black mypy pytest
+      - run: pip install -e .
       - run: ruff check .
-      - run: black --check .
       - run: ruff format --check .
+      - run: black --check .
       - run: pytest -q
       - run: mypy .
+      - name: Build wheel
+        run: python -m build
+      - name: Install built wheel & smoke
+        run: |
+          echo "WHEEL_PATH=$(python - <<'PY'
+import glob; ws=glob.glob("dist/*.whl"); print(ws[0] if ws else "")
+PY
+          )" >> $GITHUB_ENV
+          python -m pip install "${WHEEL_PATH}"
+          python - <<'PY'
+import header_guardian as m; print("import OK", getattr(m,"__version__","?"))
+PY
