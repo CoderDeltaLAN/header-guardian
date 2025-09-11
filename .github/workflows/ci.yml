@@ -1,39 +1,55 @@
 name: CI
-
 on:
   push:
-    branches: [main]
+    branches: [ main ]
   pull_request:
-    branches: [main]
   workflow_dispatch:
-
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
 jobs:
-  python-3.11 on ubuntu-latest:
+  linux:
+    name: python-${{ matrix.py }} on ubuntu-latest
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        py: ["3.11","3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
+        with: { python-version: ${{ matrix.py }} }
+      - uses: actions/cache@v4
         with:
-          python-version: '3.11'
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-${{ matrix.py }}-${{ hashFiles('pyproject.toml') }}
       - run: python -m pip install -U pip
-      - run: python -m pip install ruff black pytest mypy build
       - run: python -m pip install .
-      - run: python -m ruff check .
-      - run: python -m black --check .
+      - run: python -m pip install ruff==0.6.9 black==24.10.0 pytest==8.4.2 mypy==1.17.1
+      - run: ruff check .
+      - run: black --check .
+      - run: ruff format --check .
       - run: pytest -q
       - run: mypy .
-
-  python-3.12 on ubuntu-latest:
-    runs-on: ubuntu-latest
+  windows:
+    name: python-${{ matrix.py }} on windows-latest
+    runs-on: windows-latest
+    continue-on-error: true
+    strategy:
+      fail-fast: false
+      matrix:
+        py: ["3.11","3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
+        with: { python-version: ${{ matrix.py }} }
       - run: python -m pip install -U pip
-      - run: python -m pip install ruff black pytest mypy build
       - run: python -m pip install .
-      - run: python -m ruff check .
-      - run: python -m black --check .
+      - run: python -m pip install ruff==0.6.9 black==24.10.0 pytest==8.4.2 mypy==1.17.1
+      - run: ruff check .
+      - run: black --check .
+      - run: ruff format --check .
       - run: pytest -q
       - run: mypy .
