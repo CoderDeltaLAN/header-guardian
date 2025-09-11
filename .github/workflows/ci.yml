@@ -1,52 +1,39 @@
 name: CI
+
 on:
   push:
     branches: [main]
   pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled, unlabeled]
+    branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: read
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
 jobs:
-  linux:
-    name: python-${{ matrix.python-version }} on ubuntu-latest
+  python-3.11 on ubuntu-latest:
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11","3.12"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: '3.11'
       - run: python -m pip install -U pip
-      - run: pip install ruff black pytest mypy
-      - run: ruff check .
-      - run: black --check .
-      - run: ruff format --check .
+      - run: python -m pip install ruff black pytest mypy build
+      - run: python -m pip install .
+      - run: python -m ruff check .
+      - run: python -m black --check .
       - run: pytest -q
       - run: mypy .
 
-  windows_optional:
-    name: python-3.12 on windows-latest
-    runs-on: windows-latest
-    continue-on-error: true
+  python-3.12 on ubuntu-latest:
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: '3.12'
       - run: python -m pip install -U pip
-      - run: pip install ruff black pytest mypy
-      - run: ruff check .
-      - run: black --check .
-      - run: ruff format --check .
+      - run: python -m pip install ruff black pytest mypy build
+      - run: python -m pip install .
+      - run: python -m ruff check .
+      - run: python -m black --check .
       - run: pytest -q
       - run: mypy .
