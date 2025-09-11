@@ -1,10 +1,11 @@
 name: CI
 on:
   push:
-    branches: [ main ]
   pull_request:
-    branches: [ main ]
   workflow_dispatch:
+
+permissions:
+  contents: read
 
 jobs:
   linux-py311:
@@ -17,13 +18,32 @@ jobs:
       - run: python -m pip install -U pip
       - run: pip install -U ruff black mypy pytest build
       - run: pip install -e .
-      - run: ruff check .
-      - run: ruff format --check .
-      - run: black --check .
-      - run: pytest -q
-      - run: mypy .
+      - name: Init log
+        run: : > ci.log
+      - name: Ruff check
+        run: |
+          echo '$ ruff check .' | tee -a ci.log
+          ruff check . 2>&1 | tee -a ci.log
+      - name: Ruff format --check
+        run: |
+          echo '$ ruff format --check .' | tee -a ci.log
+          ruff format --check . 2>&1 | tee -a ci.log
+      - name: Black --check
+        run: |
+          echo '$ black --check .' | tee -a ci.log
+          black --check . 2>&1 | tee -a ci.log
+      - name: Pytest
+        run: |
+          echo '$ pytest -q' | tee -a ci.log
+          pytest -q 2>&1 | tee -a ci.log
+      - name: Mypy
+        run: |
+          echo '$ mypy .' | tee -a ci.log
+          mypy . 2>&1 | tee -a ci.log
       - name: Build wheel
-        run: python -m build
+        run: |
+          echo '$ python -m build' | tee -a ci.log
+          python -m build 2>&1 | tee -a ci.log
       - name: Install built wheel & smoke
         run: |
           python - <<'PY'
@@ -33,6 +53,14 @@ jobs:
           subprocess.check_call([sys.executable,"-m","pip","install",ws[0]])
           import header_guardian as m; print("import OK", getattr(m,"__version__","?"))
           PY
+      - name: Upload job log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-log-py311
+          path: ci.log
+          if-no-files-found: warn
+          retention-days: 7
 
   linux-py312:
     name: python-3.12 on ubuntu-latest
@@ -44,13 +72,32 @@ jobs:
       - run: python -m pip install -U pip
       - run: pip install -U ruff black mypy pytest build
       - run: pip install -e .
-      - run: ruff check .
-      - run: ruff format --check .
-      - run: black --check .
-      - run: pytest -q
-      - run: mypy .
+      - name: Init log
+        run: : > ci.log
+      - name: Ruff check
+        run: |
+          echo '$ ruff check .' | tee -a ci.log
+          ruff check . 2>&1 | tee -a ci.log
+      - name: Ruff format --check
+        run: |
+          echo '$ ruff format --check .' | tee -a ci.log
+          ruff format --check . 2>&1 | tee -a ci.log
+      - name: Black --check
+        run: |
+          echo '$ black --check .' | tee -a ci.log
+          black --check . 2>&1 | tee -a ci.log
+      - name: Pytest
+        run: |
+          echo '$ pytest -q' | tee -a ci.log
+          pytest -q 2>&1 | tee -a ci.log
+      - name: Mypy
+        run: |
+          echo '$ mypy .' | tee -a ci.log
+          mypy . 2>&1 | tee -a ci.log
       - name: Build wheel
-        run: python -m build
+        run: |
+          echo '$ python -m build' | tee -a ci.log
+          python -m build 2>&1 | tee -a ci.log
       - name: Install built wheel & smoke
         run: |
           python - <<'PY'
@@ -60,3 +107,11 @@ jobs:
           subprocess.check_call([sys.executable,"-m","pip","install",ws[0]])
           import header_guardian as m; print("import OK", getattr(m,"__version__","?"))
           PY
+      - name: Upload job log
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ci-log-py312
+          path: ci.log
+          if-no-files-found: warn
+          retention-days: 7
