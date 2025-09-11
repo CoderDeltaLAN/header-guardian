@@ -83,7 +83,8 @@ def ensure_header(path: Path, header: str, *, autofix: bool = False) -> bool:
     text = path.read_text(encoding="utf-8", errors="ignore")
     # Evita duplicados si corre en paralelo
     if not has_header(path, header):
-        path.write_text(f"{header}{'' if header.endswith('\n') else '\n'}{text}", encoding="utf-8")
+        suffix = \"\" if header.endswith(\"\n\") else \"\n\"
+        path.write_text(f\"{header}{suffix}{text}\", encoding=\"utf-8\")
     return True
 
 
